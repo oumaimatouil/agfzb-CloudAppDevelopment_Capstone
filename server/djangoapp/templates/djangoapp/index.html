@@ -27,6 +27,22 @@
                         <a class="nav-link" href="{% url 'djangoapp:contact' %}">Contact Us</a>
                     </li>
                 </ul>
+                <!-- Add login form and signup link/button for non-authenticated users -->
+                {% if user.is_authenticated %}
+                <!-- Display user's first name or username -->
+                <span class="navbar-text mr-3">Welcome, {{ user.first_name|default:user.username }}</span>
+                <!-- Add signout button/link -->
+                <a class="btn btn-primary" href="{% url 'djangoapp:custom_logout' %}">Log Out</a>
+                {% else %}
+                    <!-- Add login form and signup link/button for non-authenticated users -->
+                <form class="form-inline ml-auto">
+                <input class="form-control mr-2" type="text" placeholder="Username">
+                <input class="form-control mr-2" type="password" placeholder="Password">
+                <button class="btn btn-primary" type="submit">Login</button>
+                 </form>
+                <!-- Corrected the 'href' attribute for the Sign up link -->
+                <a class="btn btn-success ml-2" href="{% url 'djangoapp:registration' %}">Sign Up</a>
+                {% endif %}
             </div>
         </div>
     </nav>
