@@ -1,7 +1,6 @@
 {
   "name": "sample",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node sample.js",
@@ -16,5 +15,6 @@
   },
   "devDependencies": {
     "eslint": "^8.27.0"
-  }
+  },
+  "description": ""
 }
