@@ -1,34 +1,52 @@
 import requests
 import json
-# import related models here
+from .models import CarDealer
 from requests.auth import HTTPBasicAuth
 
+# Create a `get_request` function to make HTTP GET requests
+def get_request(url, **kwargs):
+    print(kwargs)
+    print("GET from {} ".format(url))
+    
+    try:
+        # Call the get method of the requests library with URL and parameters
+        response = requests.get(url, headers={'Content-Type': 'application/json'}, params=kwargs)
+    except requests.exceptions.RequestException as e:
+        # Handle network or request exceptions
+        print("Network exception occurred:", str(e))
+        return None
+    
+    status_code = response.status_code
+    print("With status {} ".format(status_code))
+    
+    if response.status_code == 200:
+        # Parse JSON response into a Python dictionary
+        json_data = response.json()
+        return json_data
+    else:
+        print("Failed to fetch data. Status code:", status_code)
+        return None
 
-# Create a `get_request` to make HTTP GET requests
-# e.g., response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
-#                                     auth=HTTPBasicAuth('apikey', api_key))
-
-
-# Create a `post_request` to make HTTP POST requests
-# e.g., response = requests.post(url, params=kwargs, json=payload)
-
-
-# Create a get_dealers_from_cf method to get dealers from a cloud function
-# def get_dealers_from_cf(url, **kwargs):
-# - Call get_request() with specified arguments
-# - Parse JSON results into a CarDealer object list
-
-
-# Create a get_dealer_reviews_from_cf method to get reviews by dealer id from a cloud function
-# def get_dealer_by_id_from_cf(url, dealerId):
-# - Call get_request() with specified arguments
-# - Parse JSON results into a DealerView object list
-
-
-# Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
-# def analyze_review_sentiments(text):
-# - Call get_request() with specified arguments
-# - Get the returned sentiment label such as Positive or Negative
-
-
-
+# Create a function `get_dealers_from_cf` to get dealers from a cloud function
+def get_dealers_from_cf(url, **kwargs):
+    results = []
+    # Call get_request with a URL parameter
+    json_result = get_request(url)
+    if json_result:
+        # Iterate through the list of dealer dictionaries
+        for dealer_dict in json_result:
+            # Create a CarDealer object with values from the dealer dictionary
+            dealer_obj = CarDealer(
+                address=dealer_dict["address"],
+                city=dealer_dict["city"],
+                full_name=dealer_dict["full_name"],
+                id=dealer_dict["id"],
+                lat=dealer_dict["lat"],
+                long=dealer_dict["long"],
+                short_name=dealer_dict["short_name"],
+                st=dealer_dict["st"],
+                zip=dealer_dict["zip"]
+            )
+            results.append(dealer_obj)
+    print('results', results)
+    return results
