@@ -114,7 +114,7 @@ def get_dealerships(request):
 def get_dealer_details(request, dealer_id):
     context = {}
     if request.method == "GET":
-        url = 'https://oumaimatouil-5000.theiadocker-2-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/get_reviews'
+        url = 'https://oumaimatouil-5000.theiadocker-1-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/get_reviews'
         reviews = get_dealer_reviews_from_cf(url, dealer_id=dealer_id)
         for review in reviews:
             print("rev", review.review)
