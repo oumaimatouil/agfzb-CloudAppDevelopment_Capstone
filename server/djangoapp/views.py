@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import CarDealer
 # from .restapis import related methods
-from .restapis import get_dealers_from_cf
+from .restapis import get_dealers_from_cf, get_dealer_reviews_from_cf
 
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
@@ -104,16 +104,31 @@ def get_dealerships(request):
         dealerships = get_dealers_from_cf(url)
         # Concat all dealer's short name
         dealer_names = ' '.join([dealer.short_name for dealer in dealerships])
-        dealer_names_list = [dealer.short_name for dealer in dealerships]
+        dealer_names_list = dealer_names.split()
         print(type(dealer_names_list))
         # Return a list of dealer short name
-        return HttpResponse(dealer_names_list)
+        #return HttpResponse(dealer_names_list)
         #return render(request, 'djangoapp/index.html', {'dealerships': dealerships})
-        return render(request, 'djangoapp/index.html', dealer_names_list)
+        return render(request, 'djangoapp/index.html',  {'dealer_names_list': dealer_names_list})
+
+def get_dealer_details(request, dealer_id):
+    context = {}
+    if request.method == "GET":
+        url = 'https://oumaimatouil-5000.theiadocker-2-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/get_reviews'
+        reviews = get_dealer_reviews_from_cf(url, dealer_id=dealer_id)
+        for review in reviews:
+            print("rev", review.review)
+         # Concat all dealer's short name
+        reviews_list= [review.review for review in reviews]
+        dealerships_list= [review.dealership for review in reviews]
+        result = [(i,j) for i,j in zip(dealerships_list, reviews_list)]
+
+        return HttpResponse(result)
 
 
 
 # Create a `get_dealer_details` view to render the reviews of a dealer
+
 # def get_dealer_details(request, dealer_id):
 # ...
 
