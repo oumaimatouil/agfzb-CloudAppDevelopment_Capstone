@@ -99,17 +99,24 @@ def registration_request(request):
 # Update the `get_dealerships` view to render the index page with a list of dealerships
 def get_dealerships(request):
     if request.method == "GET":
-        url = "https://oumaimatouil-3000.theiadocker-2-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/dealership"
+        url = "https://oumaimatouil-3000.theiadocker-1-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/dealership"
         # Get dealers from the URL
         dealerships = get_dealers_from_cf(url)
         # Concat all dealer's short name
         dealer_names = ' '.join([dealer.short_name for dealer in dealerships])
         dealer_names_list = dealer_names.split()
         print(type(dealer_names_list))
+        # Create an empty context dictionary
+        context = {}
+        
+        # Add the dealerships list to the context
+        context['dealerships'] = dealerships
         # Return a list of dealer short name
         #return HttpResponse(dealer_names_list)
         #return render(request, 'djangoapp/index.html', {'dealerships': dealerships})
-        return render(request, 'djangoapp/index.html',  {'dealer_names_list': dealer_names_list})
+        #return render(request, 'djangoapp/index.html',  {'dealer_names_list': dealer_names_list})
+        # Update the return statement to use render with context
+        return render(request, 'djangoapp/index.html', context)
 
 def get_dealer_details(request, dealer_id):
     context = {}
@@ -124,9 +131,11 @@ def get_dealer_details(request, dealer_id):
         sentiment_list = [review.sentiment for review in reviews]
         result = [(i,j) for i,j in zip(dealerships_list, reviews_list)]
         result_sentiment = [(i,j) for i,j in zip(result, sentiment_list)]
+        context['reviews']=reviews
 
 
-        return HttpResponse(result_sentiment)
+        #return HttpResponse(result_sentiment)
+        return render(request, 'djangoapp/dealer_details.html', context)
 
 
 

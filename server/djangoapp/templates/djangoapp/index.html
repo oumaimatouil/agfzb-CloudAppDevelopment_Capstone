@@ -46,16 +46,36 @@
             </div>
         </div>
     </nav>
-    <div class="container mt-5">
-        <h2>List of Dealerships</h2>
-        <ul>
-            {% for dealer_name in dealer_names_list %}
-                <li>{{ dealer_name }}</li>
-            {% endfor %}
-        </ul>
-    </div>
+    
 
     <!--Add a dealer table here -->
+    <div class="container mt-5">
+        <h2>List of Dealerships</h2>
+        <table class="table" id="table" data-toggle="table" data-pagination="true" data-search="true">
+            <thead>
+                <tr>
+                    <th data-field="id" data-filter-control="input" data-sortable="true">ID</th>
+                    <th data-field="name" data-filter-control="input" data-sortable="true">Dealer Name</th>
+                    <th data-field="city" data-filter-control="input" data-sortable="true">City</th>
+                    <th data-field="address" data-filter-control="input" data-sortable="true">Address</th>
+                    <th data-field="zip" data-filter-control="input" data-sortable="true">Zip</th>
+                    <th data-field="state" data-filter-control="input" data-sortable="true">State</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dealer in dealerships %}
+                    <tr>
+                        <td>{{ dealer.id }}</td>
+                        <td><a href="{% url 'djangoapp:dealer_details' dealer.id %}">{{ dealer.name }}</a></td>
+                        <td>{{ dealer.city }}</td>
+                        <td>{{ dealer.address }}</td>
+                        <td>{{ dealer.zip }}</td>
+                        <td>{{ dealer.state }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
     </body>
 
