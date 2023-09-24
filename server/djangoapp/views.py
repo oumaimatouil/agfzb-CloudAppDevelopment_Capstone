@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import CarDealer
 # from .restapis import related methods
-from .restapis import get_dealers_from_cf, get_dealer_reviews_from_cf
+from .restapis import get_dealers_from_cf, get_dealer_reviews_from_cf, get_dealer_by_id
 
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
@@ -99,7 +99,7 @@ def registration_request(request):
 # Update the `get_dealerships` view to render the index page with a list of dealerships
 def get_dealerships(request):
     if request.method == "GET":
-        url = "https://oumaimatouil-3000.theiadocker-1-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/dealership"
+        url = "https://oumaimatouil-3000.theiadocker-1-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/dealerships/"
         # Get dealers from the URL
         dealerships = get_dealers_from_cf(url)
         # Concat all dealer's short name
@@ -107,10 +107,14 @@ def get_dealerships(request):
         dealer_names_list = dealer_names.split()
         print(type(dealer_names_list))
         # Create an empty context dictionary
+        for dealer in dealerships:
+            print("hi")
+            print(dealer.st)
         context = {}
         
         # Add the dealerships list to the context
         context['dealerships'] = dealerships
+        print("context, context")
         # Return a list of dealer short name
         #return HttpResponse(dealer_names_list)
         #return render(request, 'djangoapp/index.html', {'dealerships': dealerships})
@@ -122,20 +126,28 @@ def get_dealer_details(request, dealer_id):
     context = {}
     if request.method == "GET":
         url = 'https://oumaimatouil-5000.theiadocker-1-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/get_reviews'
+        url_2 = "https://oumaimatouil-3000.theiadocker-1-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/dealerships/"
+        dealership = get_dealer_by_id(url_2, dealer_id)
         reviews = get_dealer_reviews_from_cf(url, dealer_id=dealer_id)
-        for review in reviews:
-            print("rev", review.review)
          # Concat all dealer's short name
-        reviews_list= [review.review for review in reviews]
-        dealerships_list= [review.dealership for review in reviews]
-        sentiment_list = [review.sentiment for review in reviews]
-        result = [(i,j) for i,j in zip(dealerships_list, reviews_list)]
-        result_sentiment = [(i,j) for i,j in zip(result, sentiment_list)]
-        context['reviews']=reviews
+        #reviews_list= [review.review for review in reviews]
+        #dealerships_list= [review.dealership for review in reviews]
+        #sentiment_list = [review.sentiment for review in reviews]
+        #result = [(i,j) for i,j in zip(dealerships_list, reviews_list)]
+        #result_sentiment = [(i,j) for i,j in zip(result, sentiment_list)]
+        #context['reviews']=reviews
+        context = {
+            "reviews":  reviews[0], 
+            "dealer_id": dealer_id,
+            "dealer":dealership[0]
+        }
+
+
+        return render(request, 'djangoapp/dealer_details.html', context)
 
 
         #return HttpResponse(result_sentiment)
-        return render(request, 'djangoapp/dealer_details.html', context)
+       # return render(request, 'djangoapp/dealer_details.html', context)
 
 
 
@@ -187,3 +199,6 @@ def add_review(request, dealer_id):
         # If user isn't logged in, redirect to login page
         print("User must be authenticated before posting a review. Please log in.")
         return redirect("/djangoapp/login")
+
+
+    

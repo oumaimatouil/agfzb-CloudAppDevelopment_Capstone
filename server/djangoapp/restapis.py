@@ -78,10 +78,11 @@ def get_dealers_from_cf(url, **kwargs):
 def get_dealer_by_id(url, dealer_id, **kwargs):
     results = []
     # Define the URL with the dealerId parameter
-    url_with_id = f"{url}?dealerId={dealer_id}"
+    url_with_id = f"{url}?id={int(dealer_id)}"
     
     # Call get_request with the updated URL
     json_result = get_request(url_with_id, **kwargs)
+    print("json result", json_result)
     
     if json_result:
         # Iterate through the list of dealer dictionaries

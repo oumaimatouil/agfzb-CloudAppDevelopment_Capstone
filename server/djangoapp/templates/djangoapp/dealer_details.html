@@ -6,42 +6,75 @@
     {% load static %}
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 </head>
+
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Dealership Reviews</a>
-            <!-- Add navigation links if needed -->
-        </div>
-    </nav>
 
-    <div class="container mt-5">
-        <h2>Dealer Reviews</h2>
+<!-- Dealer Information Section -->
+<div class="container mt-5">
+    <h2>{{ dealer.full_name }} Details</h2>
+    <hr>
 
-        <!-- Review Cards -->
-        <div class="row">
-            {% for review in reviews %}
-                <div class="col-md-4">
-                    <div class="card mb-4">
-                        <!-- Review Title -->
-                        <div class="card-header">
-                            <h5 class="card-title">{{ review.title }}</h5>
-                        </div>
-                        
-                        <!-- Review Body -->
-                        <div class="card-body">
-                            <p class="card-text">{{ review.body }}</p>
-                        </div>
+    <!-- Add dealer information here -->
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>ID</th>
+                <td>{{ dealer.id }}</td>
+            </tr>
+            <tr>
+                <th>Name</th>
+                <td>{{ dealer.full_name }}</td>
+            </tr>
+            <tr>
+                <th>City</th>
+                <td>{{ dealer.city }}</td>
+            </tr>
+            <tr>
+                <th>Address</th>
+                <td>{{ dealer.address }}</td>
+            </tr>
+            <tr>
+                <th>Zip</th>
+                <td>{{ dealer.zip }}</td>
+            </tr>
+            <tr>
+                <th>State</th>
+                <td>{{ dealer.st }}</td>
+            </tr>
+            <!-- Add more dealer information fields as needed -->
+        </tbody>
+    </table>
 
-                        <!-- Review Author and Date -->
-                        <div class="card-footer text-muted">
-                            <p class="card-text">Author: {{ review.author }}</p>
-                            <p class="card-text">Date: {{ review.date }}</p>
-                        </div>
-                    </div>
+    <!-- Reviews Section -->
+    <h3>Reviews</h3>
+    <div class="card-columns">
+        {% for review in dealer.dealerreview_set.all %}
+            <div class="card" style="height: 300px; overflow: scroll; overflow-x: hidden;">
+                <!-- You can add an image or icon here based on the sentiment if needed -->
+                <div class="card-body" style="text-align: center;">
+                    <h5 class="card-title">{{ review.car_make }}, {{ review.car_model }}</h5>
+                    <h5 class="card-title">{{ review.car_year }}</h5>
+                    <p class="card-text" style="text-align: left;">{{ review.review }}</p>
                 </div>
-            {% endfor %}
-        </div>
+            </div>
+        {% endfor %}
     </div>
+
+    <!-- If there are no reviews -->
+    {% if not dealer.dealerreview_set.all %}
+        <p></br>There are no reviews for this dealership.</br></p>
+    {% endif %}
+
+    <!-- Add a link to write a review if the user is authenticated -->
+    {% if user.is_authenticated %}
+        <div style="margin: 10px;">
+            <a class="btn btn-primary" href="{% url 'djangoapp:add_review' dealer.id %}"><b>Write a car review</b></a>
+        </div>
+    {% endif %}
+</div>
+<!-- Add a footer or additional content if needed -->
+
 </body>
+
+
 </html>

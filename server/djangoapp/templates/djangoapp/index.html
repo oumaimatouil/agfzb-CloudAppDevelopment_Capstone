@@ -66,11 +66,11 @@
                 {% for dealer in dealerships %}
                     <tr>
                         <td>{{ dealer.id }}</td>
-                        <td><a href="{% url 'djangoapp:dealer_details' dealer.id %}">{{ dealer.name }}</a></td>
+                        <td><a href="{% url 'djangoapp:dealer_details' dealer.id %}">{{dealer.full_name}}</a></td>
                         <td>{{ dealer.city }}</td>
                         <td>{{ dealer.address }}</td>
                         <td>{{ dealer.zip }}</td>
-                        <td>{{ dealer.state }}</td>
+                        <td>{{ dealer.st }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
