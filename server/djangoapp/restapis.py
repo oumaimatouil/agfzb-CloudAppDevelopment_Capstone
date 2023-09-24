@@ -131,7 +131,7 @@ def get_dealers_by_state(url, state, **kwargs):
     return results
 
 # Create a function `get_dealers_from_cf` to get dealers from a cloud function
-def get_dealers_reviews_from_cf(url, **kwargs):
+def get_dealers1_reviews_from_cf(url, **kwargs):
     results = []
     # Call get_request with a URL parameter
     json_result = get_request(url)

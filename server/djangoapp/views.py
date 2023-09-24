@@ -73,28 +73,21 @@ def registration_request(request):
         password = request.POST['psw']
         first_name = request.POST['firstname']
         last_name = request.POST['lastname']
-        user_exist = False
-        try:
-            # Check if user already exists
-            User.objects.get(username=username)
-            user_exist = True
-        except:
-            # If not, simply log this is a new user
-            logger.debug("{} is new user".format(username))
-        # If it is a new user
-        if not user_exist:
+        user_exists = User.objects.filter(username=username).exists()
+        if not user_exists:
             # Create user in auth_user table
-            user = User.objects.create_user(username=username, first_name=first_name, last_name=last_name,
-                                            password=password)
-            # Login the user and redirect to course list page
+            user = User.objects.create_user(
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+                password=password,
+            )
+            # Login the user and redirect to index page
             login(request, user)
             return redirect("djangoapp:index")
         else:
+            messages.error(request, "Username already exists. Please choose another username.")
             return render(request, 'djangoapp/registration.html', context)
-
-
-
-
 
 # Update the `get_dealerships` view to render the index page with a list of dealerships
 def get_dealerships(request):
@@ -141,7 +134,6 @@ def get_dealer_details(request, dealer_id):
             "dealer_id": dealer_id,
             "dealer":dealership[0]
         }
-        print(reviews[0])
 
 
         return render(request, 'djangoapp/dealer_details.html', context)
