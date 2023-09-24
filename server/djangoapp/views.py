@@ -137,10 +137,11 @@ def get_dealer_details(request, dealer_id):
         #result_sentiment = [(i,j) for i,j in zip(result, sentiment_list)]
         #context['reviews']=reviews
         context = {
-            "reviews":  reviews[0], 
+            "reviews":  reviews, 
             "dealer_id": dealer_id,
             "dealer":dealership[0]
         }
+        print(reviews[0])
 
 
         return render(request, 'djangoapp/dealer_details.html', context)
