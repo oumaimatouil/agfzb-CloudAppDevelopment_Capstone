@@ -82,19 +82,18 @@
     <h3>{{ dealer.full_name }} Reviews</h3>
     <div class="card-columns">
         {% for review in reviews %}
-            <div class="card" style="height: 300px; overflow: scroll; overflow-x: hidden;">
+            <div class="card mb-3">
                 <!-- Add an image to visualize the sentiment -->
-                <img class="card-img-left" src="{{MEDIA_URL}}/emoji/{{ review.sentiment }}.png" alt="{{ review.sentiment }}">
+                <img class="card-img-top" src="{{MEDIA_URL}}/emoji/{{ review.sentiment }}.png" alt="{{ review.sentiment }}" style="width: 32px; height: 32px;">
                 <!-- Card Body -->
-                <div class="card-body" style="text-align: center;">
+                <div class="card-body">
                     <h5 class="card-title">{{ review.car_make }}, {{ review.car_model }}</h5>
-                    <h5 class="card-title">{{ review.car_year }}</h5>
-                    <p class="card-text" style="text-align: left;">{{ review.review }}</p>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ review.car_year }}</h6>
+                    <p class="card-text">{{ review.review }}</p>
                 </div>
             </div>
         {% endfor %}
     </div>
-
     <!-- If there are no reviews -->
     {% if not reviews %}
         <p></br>There are no reviews for this dealership.</br></p>

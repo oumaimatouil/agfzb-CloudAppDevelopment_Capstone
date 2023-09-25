@@ -166,14 +166,31 @@ def get_dealer_reviews_from_cf(url, dealer_id, **kwargs):
             print("review_dict", review_dict)
             print("rev", review_dict["review"])
             # Create a DealerReview object with values from the review dictionary
-            review_obj = DealerReview(
-                dealership=review_dict["dealership"],
-                name=review_dict["name"],
-                purchase=review_dict["purchase"],
-                review=review_dict["review"],
-                purchase_date=review_dict["purchase"],
-                id=review_dict["id"]
-            )
+            dealership=review_dict["dealership"]
+            name=review_dict["name"]
+            purchase=review_dict["purchase"]
+            review=review_dict["review"]
+            purchase_date=review_dict["purchase"]
+            id=review_dict["id"]
+            try:
+                # These values may be missing
+                car_make = review_dict["car_make"]
+                car_model = review_dict["car_model"]
+                car_year = review_dict["car_year"]
+                purchase_date = review_dict["purchase_date"]
+
+                # Creating a review object
+                review_obj = DealerReview(dealership=dealership, id=id, name=name, 
+                                          purchase=purchase, review=review, car_make=car_make, 
+                                          car_model=car_model, car_year=car_year, purchase_date=purchase_date
+                                          )
+
+            except KeyError:
+                print("Something is missing from this review. Using default values.")
+                # Creating a review object with some default values
+                review_obj = DealerReview(
+                    dealership=dealership, id=id, name=name, purchase=purchase, review=review)
+            print("review", review_obj.review)
             print( analyze_review_sentiments(review_obj.review))
             review_obj.sentiment = analyze_review_sentiments(review_obj.review)['sentiment']['document']['label']
             print(f"sentiment: {review_obj.sentiment}")
