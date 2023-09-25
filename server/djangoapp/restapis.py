@@ -42,7 +42,9 @@ def get_request(url,api_key=False, **kwargs):
 
 # Function for making HTTP POST requests
 def post_request(url, json_payload, **kwargs):
+    print("hi from post_request")
     print(f"POST to {url}")
+    print(json_payload)
     try:
         response = requests.post(url, params=kwargs, json=json_payload)
     except:
