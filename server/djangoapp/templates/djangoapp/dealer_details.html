@@ -9,6 +9,39 @@
 
 <body>
 
+<!-- Copy the Navbar from index.html -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'djangoapp:index' %}">BestCar Dealership Branch Reviews</a>
+        <div class="collapse navbar-collapse" id="navbarText">
+            <ul style="justify-content:left;" class="navbar-nav">
+                <li class="navbar-brand">
+                    <a class="nav-link" href="{% url 'djangoapp:about' %}">About Us</a>
+                </li>
+                <li class="navbar-brand">
+                    <a class="nav-link" href="{% url 'djangoapp:contact' %}">Contact Us</a>
+                </li>
+            </ul>
+            <!-- Add login form and signup link/button for non-authenticated users -->
+            {% if user.is_authenticated %}
+            <!-- Display user's first name or username -->
+            <span class="navbar-text mr-3">Welcome, {{ user.first_name|default:user.username }}</span>
+            <!-- Add signout button/link -->
+            <a class="btn btn-primary" href="{% url 'djangoapp:custom_logout' %}">Log Out</a>
+            {% else %}
+                <!-- Add login form and signup link/button for non-authenticated users -->
+            <form class="form-inline ml-auto">
+            <input class="form-control mr-2" type="text" placeholder="Username">
+            <input class="form-control mr-2" type="password" placeholder="Password">
+            <button class="btn btn-primary" type="submit">Login</button>
+             </form>
+            <!-- Corrected the 'href' attribute for the Sign up link -->
+            <a class="btn btn-success ml-2" href="{% url 'djangoapp:registration' %}">Sign Up</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
 <!-- Dealer Information Section -->
 <div class="container mt-5">
     <h2>{{ dealer.full_name }} Details</h2>
@@ -46,11 +79,13 @@
     </table>
 
     <!-- Reviews Section -->
-    <h3>Reviews</h3>
+    <h3>{{ dealer.full_name }} Reviews</h3>
     <div class="card-columns">
         {% for review in reviews %}
             <div class="card" style="height: 300px; overflow: scroll; overflow-x: hidden;">
-                <!-- You can add an image or icon here based on the sentiment if needed -->
+                <!-- Add an image to visualize the sentiment -->
+                <img class="card-img-left" src="{{MEDIA_URL}}/emoji/{{ review.sentiment }}.png" alt="{{ review.sentiment }}">
+                <!-- Card Body -->
                 <div class="card-body" style="text-align: center;">
                     <h5 class="card-title">{{ review.car_make }}, {{ review.car_model }}</h5>
                     <h5 class="card-title">{{ review.car_year }}</h5>
@@ -75,6 +110,4 @@
 <!-- Add a footer or additional content if needed -->
 
 </body>
-
-
 </html>

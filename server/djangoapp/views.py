@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
-from .models import CarDealer
+from .models import CarDealer, CarModel
 # from .restapis import related methods
 from .restapis import get_dealers_from_cf, get_dealer_reviews_from_cf, get_dealer_by_id
 
@@ -152,7 +152,7 @@ def get_dealer_details(request, dealer_id):
 
 # Create a `add_review` view to submit a review
 # View to submit a new review
-def add_review(request, dealer_id):
+def add_review1(request, dealer_id):
     # User must be logged in before posting a review
     if request.user.is_authenticated:
 
@@ -193,5 +193,57 @@ def add_review(request, dealer_id):
         print("User must be authenticated before posting a review. Please log in.")
         return redirect("/djangoapp/login")
 
+def add_review(request, dealer_id):
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            # Extract form data
+            form = request.POST
+            review = {
+                "name": f"{request.user.first_name} {request.user.last_name}",
+                "dealership": dealer_id,
+                "review": form["content"],
+                "purchase": form.get("purchasecheck"),
+                "car_make": None,
+                "car_model": None,
+                "car_year": None,
+                "purchase_date": None,
+            }
 
-    
+            if review["purchase"]:
+                try:
+                    car_id = int(form.get("car"))
+                    car = CarModel.objects.get(pk=car_id)
+                    review["car_make"] = car.make.name
+                    review["car_model"] = car.name
+                    review["car_year"] = car.year.strftime("%Y")
+                except CarModel.DoesNotExist:
+                    messages.error(request, "Invalid car selection.")
+
+                try:
+                    purchase_date = datetime.strptime(form.get("purchasedate"), "%m/%d/%Y")
+                    review["purchase_date"] = purchase_date.isoformat()
+                except ValueError:
+                    messages.error(request, "Invalid purchase date format. Please use MM/DD/YYYY.")
+
+                url = "https://your-api-url.com/add_review"  # Replace with your API endpoint
+                json_payload = {"review": review}
+
+                try:
+                    result = requests.post(url, json=json_payload)
+
+                    if result.status_code == 200:
+                        messages.success(request, "Review posted successfully.")
+                    else:
+                        messages.error(request, "Failed to post the review.")
+                except requests.exceptions.RequestException as e:
+                    messages.error(request, f"Error: {str(e)}")
+
+                return redirect("djangoapp:dealer_details", dealer_id=dealer_id)
+        
+        # Handle GET request to populate car options in the form
+        cars = CarModel.objects.filter(dealer_id=dealer_id)
+        return render(request, "djangoapp/add_review.html", {"cars": cars, "dealer_id": dealer_id})
+
+    else:
+        messages.error(request, "User must be authenticated before posting a review. Please log in.")
+        return redirect("/djangoapp/login")

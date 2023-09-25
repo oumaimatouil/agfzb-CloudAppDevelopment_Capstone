@@ -174,7 +174,8 @@ def get_dealer_reviews_from_cf(url, dealer_id, **kwargs):
                 purchase_date=review_dict["purchase"],
                 id=review_dict["id"]
             )
-            review_obj.sentiment = analyze_review_sentiments(review_obj.review)
+            print( analyze_review_sentiments(review_obj.review))
+            review_obj.sentiment = analyze_review_sentiments(review_obj.review)['sentiment']['document']['label']
             print(f"sentiment: {review_obj.sentiment}")
             results.append(review_obj)
     print(results)
