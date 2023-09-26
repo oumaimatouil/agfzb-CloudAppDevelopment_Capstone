@@ -243,3 +243,95 @@ def get_dealer_details(request, dealer_id):
 
 
 # Create a `add_review` view to submit a review
+def add_review(request, dealer_id):
+    """
+    Add or retrieve a review for a dealer and render the add review page.
+
+    This view handles both GET and POST requests for adding or retrieving a review for a dealer.
+    - For GET requests, it retrieves dealer information and cars for selection
+    and renders the 'add_review' page.
+    - For POST requests, it processes the review submission, including checking user authentication,
+    and posts the review to an external API.
+    If successful, it redirects to the 'dealer_details' page; otherwise, it stays on
+    the 'add_review' page with an error message.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        dealer_id (int): The ID of the dealer for which the review is being added.
+
+    Returns:
+        HttpResponse: The HTTP response that renders the 'add_review' page with dealer information
+        and cars for selection for GET requests
+        or redirects to the 'dealer_details' page or stays on the 'add_review' page with
+        an error message for POST requests.
+    """
+
+    # Check if the user is authenticated
+    if not request.user.is_authenticated:
+        # Redirect to the login page or handle it as needed
+        return redirect("/djangoapp/login")
+    try:
+        dealer_id = int(dealer_id)
+    except ValueError:
+        # Handle invalid dealer ID (You can customize this error message)
+        print("Invalid dealer ID")
+    # Print the dealer ID before rendering th
+    if request.method == "GET":
+        url = (
+                f"https://oumaimatouil-3000.theiadocker-1-labs-prod-"
+                f"theiak8s-4-tor01.proxy.cognitiveclass.ai/api/dealerships/?id={dealer_id}")
+
+        dealers = get_dealer_by_id(url, dealer_id=dealer_id)
+        dealer=dealers[0]
+        cars = CarModel.objects.all()
+        context = {
+            "cars": cars,
+            "dealer": dealer,  # Include the 'dealer' object in the context
+        }
+        return render(request, 'djangoapp/add_review.html', context)
+
+    if request.method == "POST":
+        form = request.POST
+        if form.get("purchasecheck", False) is False:
+            purchase = False
+        else:
+            purchase = True
+        review = {
+            "name": f"{request.user.first_name} {request.user.last_name}",
+            "dealership": dealer_id,
+            "review": form["content"],
+            "purchase": purchase,
+            "time": datetime.utcnow().isoformat(),
+        }
+        try:
+            car_id = int(form["car"])
+            car = CarModel.objects.get(pk=car_id)
+            review["car_make"] = car.make.name
+            review["car_model"] = car.name
+            review["car_year"] = str(car.year)
+        except (ValueError, CarModel.DoesNotExist):
+            # Handle invalid car ID (You can customize this error message)
+            print("Invalid car ID")
+        if form.get("purchasecheck"):
+            purchase_date_str = form.get("purchasedate")
+            if purchase_date_str:
+                try:
+                    purchase_date = datetime.strptime(purchase_date_str, "%m/%d/%Y")
+                    review["purchase_date"] = purchase_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+                except ValueError:
+                    # Handle invalid purchase date format (You can customize this error message)
+                    print("Invalid purchase date format")
+
+        url = (
+                "https://oumaimatouil-5000.theiadocker-1-labs-prod-"
+                "theiak8s-4-tor01.proxy.cognitiveclass.ai/api/post_review")
+
+        json_payload = {"review": review}
+        result = post_request(url, json_payload, dealerId=dealer_id)
+        if int(result.status_code) == 201:
+            return redirect("djangoapp:dealer_details", dealer_id=dealer_id)
+        else:
+            print(int(result.status_code))
+            return redirect("djangoapp:add_review", dealer_id=dealer_id)
+
+    return redirect("/djangoapp/login")
