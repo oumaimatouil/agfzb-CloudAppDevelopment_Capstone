@@ -46,11 +46,14 @@ def post_request(url, json_payload, **kwargs):
     print(f"POST to {url}")
     print(json_payload)
     try:
-        response = requests.post(url, params=kwargs, json=json_payload)
+        response = requests.post(url, params=kwargs, json=json_payload['review'])
+        response.raise_for_status()
     except:
         print("An error occurred while making POST request. ")
     status_code = response.status_code
     print(f"With status {status_code}")
+    print("Response Content:", response.text)
+    print("Response Status Code:", response.status_code)
 
     return response 
 # Create a function `get_dealers_from_cf` to get dealers from a cloud function
@@ -173,7 +176,7 @@ def get_dealer_reviews_from_cf(url, dealer_id, **kwargs):
             purchase=review_dict["purchase"]
             review=review_dict["review"]
             purchase_date=review_dict["purchase"]
-            id=review_dict["id"]
+            #id=review_dict["id"]
             try:
                 # These values may be missing
                 car_make = review_dict["car_make"]
@@ -182,7 +185,7 @@ def get_dealer_reviews_from_cf(url, dealer_id, **kwargs):
                 purchase_date = review_dict["purchase_date"]
 
                 # Creating a review object
-                review_obj = DealerReview(dealership=dealership, id=id, name=name, 
+                review_obj = DealerReview(dealership=dealership, name=name, 
                                           purchase=purchase, review=review, car_make=car_make, 
                                           car_model=car_model, car_year=car_year, purchase_date=purchase_date
                                           )
@@ -194,6 +197,7 @@ def get_dealer_reviews_from_cf(url, dealer_id, **kwargs):
                     dealership=dealership, id=id, name=name, purchase=purchase, review=review)
             print("review", review_obj.review)
             print( analyze_review_sentiments(review_obj.review))
+           
             review_obj.sentiment = analyze_review_sentiments(review_obj.review)['sentiment']['document']['label']
             print(f"sentiment: {review_obj.sentiment}")
             results.append(review_obj)

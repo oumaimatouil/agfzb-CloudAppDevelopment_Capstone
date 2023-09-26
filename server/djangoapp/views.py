@@ -153,152 +153,6 @@ def get_dealer_details(request, dealer_id):
 # ...
 
 # Create a `add_review` view to submit a review
-# View to submit a new review
-def add_review1(request, dealer_id):
-    # User must be logged in before posting a review
-    if request.user.is_authenticated:
-
-        # POST request posts the content in the review submission form to the Cloudant DB using the post_review Cloud Function
-        if request.method == "POST":
-            form = request.POST
-            review = dict()
-            review["name"] = f"{request.user.first_name} {request.user.last_name}"
-            review["dealership"] = dealer_id
-            review["review"] = form["content"]
-            review["purchase"] = form.get("purchasecheck")
-            if review["purchase"]:
-                review["purchase_date"] = datetime.strptime(form.get("purchasedate"), "%m/%d/%Y").isoformat()
-            car = CarModel.objects.get(pk=form["car"])
-            review["car_make"] = car.car_make.name
-            review["car_model"] = car.name
-            review["car_year"] = car.year
-            
-            # If the user bought the car, get the purchase date
-            if form.get("purchasecheck"):
-                review["purchase_date"] = datetime.strptime(form.get("purchasedate"), "%m/%d/%Y").isoformat()
-            else: 
-                review["purchase_date"] = None
-
-            url = "https://oumaimatouil-5000.theiadocker-1-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/get_reviews"  # API Cloud Function route
-            json_payload = {"review": review}  # Create a JSON payload that contains the review data
-
-            # Performing a POST request with the review
-            result = post_request(url, json_payload, dealerId=dealer_id)
-            if int(result.status_code) == 200:
-                print("Review posted successfully.")
-
-            # After posting the review the user is redirected back to the dealer details page
-            return redirect("djangoapp:dealer_details", dealer_id=dealer_id)
-
-    else:
-        # If user isn't logged in, redirect to login page
-        print("User must be authenticated before posting a review. Please log in.")
-        return redirect("/djangoapp/login")
-
-def add_review4(request, dealer_id):
-    if request.user.is_authenticated:
-        if request.method == "POST":
-            # Extract form data
-            form = request.POST
-            review = {
-                "name": f"{request.user.first_name} {request.user.last_name}",
-                "dealership": dealer_id,
-                "review": form["content"],
-                "purchase": form.get("purchasecheck"),
-                "car_make": None,
-                "car_model": None,
-                "car_year": None,
-                "purchase_date": None,
-            }
-
-            if review["purchase"]:
-                try:
-                    car_id = int(form.get("car"))
-                    car = CarModel.objects.get(pk=car_id)
-                    review["car_make"] = car.make.name
-                    review["car_model"] = car.name
-                    review["car_year"] = car.year.strftime("%Y")
-                except CarModel.DoesNotExist:
-                    messages.error(request, "Invalid car selection.")
-
-                try:
-                    purchase_date = datetime.strptime(form.get("purchasedate"), "%m/%d/%Y")
-                    review["purchase_date"] = purchase_date.isoformat()
-                except ValueError:
-                    messages.error(request, "Invalid purchase date format. Please use MM/DD/YYYY.")
-
-                url = "https://oumaimatouil-5000.theiadocker-1-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/post_review"  # Replace with your API endpoint
-                json_payload = {"review": review}
-
-                try:
-                    result = post_request(url, json=json_payload,dealer_id=dealer_id)
-
-                    if result.status_code == 200:
-                        messages.success(request, "Review posted successfully.")
-                    else:
-                        messages.error(request, "Failed to post the review.")
-                except requests.exceptions.RequestException as e:
-                    messages.error(request, f"Error: {str(e)}")
-
-                return redirect("djangoapp:dealer_details", dealer_id=dealer_id)
-        
-        # Handle GET request to populate car options in the form
-        cars = CarModel.objects.filter(dealer_id=dealer_id)
-        return render(request, "djangoapp/add_review.html", {"cars": cars, "dealer_id": dealer_id})
-
-    else:
-        messages.error(request, "User must be authenticated before posting a review. Please log in.")
-        return redirect("/djangoapp/login")
-def add_review5(request, dealer_id):
-    # User must be logged in before posting a review
-    if request.user.is_authenticated:
-        # GET request renders the page with the form for filling out a review
-        if request.method == "GET":
-            url = f"https://oumaimatouil-3000.theiadocker-1-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/dealerships/?id={dealer_id}"
-            # Get dealer details from the API
-            context = {
-                "cars": CarModel.objects.all(),
-                "dealer": get_dealer_by_id(url, dealer_id=dealer_id),
-            }
-            print("dealersin context", context["dealer"])
-            return render(request, 'djangoapp/add_review.html', context)
-
-        # POST request posts the content in the review submission form to the Cloudant DB using the post_review Cloud Function
-        if request.method == "POST":
-            form = request.POST
-            review = dict()
-            review["name"] = f"{request.user.first_name} {request.user.last_name}"
-            review["dealership"] = dealer_id
-            review["review"] = form["content"]
-            review["purchase"] = form.get("purchasecheck")
-            if review["purchase"]:
-                review["purchase_date"] = datetime.strptime(form.get("purchasedate"), "%m/%d/%Y").isoformat()
-            car = CarModel.objects.get(pk=form["car"])
-            review["car_make"] = car.make
-            review["car_model"] = car.name
-            review["car_year"] = car.year
-            
-            # If the user bought the car, get the purchase date
-            if form.get("purchasecheck"):
-                review["purchase_date"] = datetime.strptime(form.get("purchasedate"), "%m/%d/%Y").isoformat()
-            else: 
-                review["purchase_date"] = None
-
-            url = "https://oumaimatouil-5000.theiadocker-1-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/post_review"  # API Cloud Function route
-            json_payload = {"review": review}  # Create a JSON payload that contains the review data
-
-            # Performing a POST request with the review
-            result = post_request(url, json_payload, dealerId=dealer_id)
-            if int(result.status_code) == 200:
-                print("Review posted successfully.")
-
-            # After posting the review the user is redirected back to the dealer details page
-            return redirect(reverse('djangoapp:add_review', args=[dealer_id]))
-
-    else:
-        # If user isn't logged in, redirect to login page
-        print("User must be authenticated before posting a review. Please log in.")
-        return redirect("/djangoapp/login")
 
 def add_review(request, dealer_id):
     # Check if the user is authenticated
@@ -313,6 +167,9 @@ def add_review(request, dealer_id):
     except ValueError:
         # Handle invalid dealer ID (You can customize this error message)
         error_message = "Invalid dealer ID"
+    
+    print("user_dict", request.user.__dict__)
+
 
     # Print the dealer ID before rendering th
     if request.method == "GET":
@@ -334,12 +191,19 @@ def add_review(request, dealer_id):
 
     elif request.method == "POST":
         form = request.POST
-        print(f"{request.user.first_name} {request.user.last_name}")
+        user_first_name = request.user.first_name
+        user_last_name = request.user.last_name
+        print("the use name is", user_first_name, user_last_name)
+        print(form.get("purchasecheck", False))
+        if form.get("purchasecheck", False) is False:
+            purchase = False,
+        else: 
+            purchase = True
         review = {
             "name": f"{request.user.first_name} {request.user.last_name}",
             "dealership": dealer_id,
             "review": form["content"],
-            "purchase": form.get("purchasecheck", False),
+            "purchase": purchase,
             "time": datetime.utcnow().isoformat(),
         }
 
@@ -365,10 +229,14 @@ def add_review(request, dealer_id):
                     error_message = "Invalid purchase date format"
 
         url = "https://oumaimatouil-5000.theiadocker-1-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai/api/post_review"
+        print("review after url", review)
         json_payload = {"review": review}
 
         result = post_request(url, json_payload, dealerId=dealer_id)
-        if int(result.status_code) == 200:
+        print("this is the result here",result)
+        print(int(result.status_code))
+        if int(result.status_code) == 201:
+            print("hiiiiiiiiiiiiiiiiiiiii")
             print("Review posted successfully.")
             return redirect("djangoapp:dealer_details", dealer_id=dealer_id)
         else:
